@@ -64,4 +64,18 @@ def execute(start,end):
 			new_path = list(path)
 			new_path.append(adjacent)
 			heapq.heappush(queue, (curr_distance, new_path))
+			
+def get_path_details(path):
+	code_list = '('
+	count = 0
+	for code in path:
+		code_list += "'" + code + "'"
+		if count < len(path) - 1:
+			code_list += ","
+		else:
+			code_list += ")"
+			return code_list
+		count += 1
+			
+	return ''
 	

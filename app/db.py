@@ -37,6 +37,18 @@ def get_bus_stops_by_name(name=None):
 
 	return data
 	
+def get_bus_stops_details(path=None):
+	data = []
+	if path != None:
+		cur.execute("SELECT bus_stop_code,description,latitude, longitude, road_name from STOPS where bus_stop_code IN " + path )
+
+		rows = cur.fetchall()
+		
+		for row in rows:
+			data.append({'code':row[0],'description':row[1],'latitude':row[2],'longitude':row[3]})
+
+	return data
+		
 def get_routes():
 	cur.execute("SELECT service_no, direction, distance,stop_sequence, sun_last_bus, wd_last_bus, sat_last_bus, bus_stop_code, operator, sat_first_bus, sun_first_bus, wd_first_bus from ROUTES")
 	

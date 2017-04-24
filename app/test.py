@@ -9,4 +9,5 @@ db.connect()
 
 if __name__ == '__main__':
 	pprint(dij.execute('9022','99009'))
+	pprint(db.get_bus_stops_details(dij.get_path_details(dij.execute('9022','99009'))))
 	

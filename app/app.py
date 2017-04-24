@@ -5,6 +5,7 @@ import dijkstra
 import json
 from functools import wraps
 from flask import redirect, request, current_app
+import dijkstra as dij
 
 #Connect to the postgres database
 db.connect()
@@ -29,21 +30,29 @@ def support_jsonp(f):
 @app.route(api + '/stops',methods=['GET'])	
 @support_jsonp
 def get_stops():
-	return jsonify(db.get_bus_stops())
+	name = request.args.get('name')
+	if name != None:
+		return jsonify(db.get_bus_stops_by_name(name))
+	else:
+		return jsonify(db.get_bus_stops())
 
 @app.route(api + '/stops/code/<code>',methods=['GET'])
 @support_jsonp
 def get_stops_by_code(code):
 	return jsonify(db.get_bus_stops(code))
-	
-@app.route(api + '/stops/name/<name>/',methods=['GET'])
-def get_stops_by_name(name):
-	return jsonify(db.get_bus_stops_by_name(name))
+
 
 @app.route(api + '/routes',methods=['GET'])	
 @support_jsonp
 def get_routes():
 	return jsonify(db.get_routes())
+	
+@app.route(api + '/path/shortest',methods=['GET'])	
+@support_jsonp
+def get_shortest_path():
+	source = request.args.get('from')
+	target = request.args.get('to')
+	return jsonify(db.get_bus_stops_details(dij.get_path_details(dij.execute(source,target))))
 	
 if __name__ == '__main__':
     app.run()
