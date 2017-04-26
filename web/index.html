@@ -1,0 +1,239 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>OpenLayers Demo</title>
+    <style type="text/css">
+      html, body {
+          width: 100%;
+          height: 100%;
+          margin: 10px;
+      }
+	  #basicMap {
+          width: 100%;
+          height: 100%;
+		  }
+		#header {
+			width: 100%;
+			height: 30px;
+		}
+
+		#container {
+			width: 100%;
+			background-color: #ffcc33;
+			margin: auto;
+		}
+		#first {
+			width: 50%;
+			float: left;
+			height: 500px;
+		}
+		#second {
+			width: 40%;
+			float: left;
+			height: 500px;
+		}
+		#third {
+			width: 20%;
+			float: left;
+			height: 500px;
+		}
+		#clear {
+			clear: both;
+		}
+		table,tr,td{
+			vertical-align:top;
+		}
+		
+		#divRouteResults{
+			max-height: 350px;
+			max-height: 350px;
+			background: #eee;
+			overflow-y: scroll;
+		}
+		.ui-widget1{
+			float:left;
+			padding:20px;
+		}
+		.ui-widget2{
+			float:left;
+			padding:20px;
+		}
+    </style>
+	<script src="http://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="js/OpenLayers/OpenLayers.js"></script>
+	<script src="js/moment.js"></script> 
+	<script src="js/combodate.js"></script> 	
+    <script>
+	var markers;
+      function init() {
+        map = new OpenLayers.Map("basicMap");
+        var mapnik         = new OpenLayers.Layer.OSM();
+        var fromProjection = new OpenLayers.Projection("EPSG:4326");   // Transform from WGS 1984
+        var toProjection   = new OpenLayers.Projection("EPSG:900913"); // to Spherical Mercator Projection
+        var position       = new OpenLayers.LonLat(103.8525359,1.296848255).transform( fromProjection, toProjection);
+        var zoom           = 15; 
+
+        map.addLayer(mapnik);
+        map.setCenter(position, zoom );
+		
+		markers = new OpenLayers.Layer.Markers( "Markers" );
+		map.addLayer(markers);
+		//load_data();
+		bind_autocomplete();
+		
+		$("#btnRoute").click(function(){
+			shortest_path($("#txtFromCode").text(),$("#txtToCode").text());
+		});
+		
+		$('#dateFrom').combodate();    
+		$('#dateTo').combodate();  
+      }
+	  function add_marker(lat,lon){
+		var lonLat = new OpenLayers.LonLat( lon,lat )
+          .transform(
+            new OpenLayers.Projection("EPSG:4326"), // transform from WGS 1984
+            map.getProjectionObject() // to Spherical Mercator Projection
+          );
+		  markers.addMarker(new OpenLayers.Marker(lonLat));
+	  }
+	  
+	  function load_data(){
+		$.ajax({
+		  url: "http://localhost:5000/api/v1/stops",
+		  type: "GET",
+		  dataType: "jsonp",
+		  success: function(data){
+			$.each(data, function(index, element) {
+				add_marker(element.latitude,element.longitude);
+			});
+		  }
+		});
+	  }
+	  	function shortest_path(source,target){
+		$.ajax( {
+			url: "http://localhost:5000/api/v1/path/shortest?from="+source+"&to="+target,
+			dataType: "jsonp",
+			success: function( data ) {
+				display_route_path(data);
+			}
+		});
+		
+		
+		function display_route_path(data){
+			var content = "<table>";
+			$.each(data, function(index, element) {
+							add_marker(element.latitude,element.longitude);
+				content+="<tr><td>"+element.code+"</td><td>"+element.description+"</td></tr>";
+			});
+			content += "</table>";
+			$("#divRouteResults").html(content);
+		}
+	}
+
+	function bind_autocomplete() {
+		$( "#txtFrom" ).autocomplete({
+			source: function( request, response ) {
+				$.ajax( {
+					url: "http://localhost:5000/api/v1/stops?name="+request.term,
+					dataType: "jsonp",
+					success: function( data ) {
+						
+						console.log(data);
+						response($.map(data, function (item) {
+							return {
+								id: item.code,
+								value: item.description
+							};
+						}));
+					},
+					error(req,status,err){
+						console.log(err);
+					}
+				} );
+			},
+			minLength: 2,
+			select: function( event, ui ) {
+				  $("#txtFromCode").text(ui.item.id);
+				  $("#txtFrom").val(ui.item.value);
+				return false;
+			}
+		} );
+		
+		////////// to 
+		$( "#txtTo" ).autocomplete({
+			source: function( request, response ) {
+				$.ajax( {
+					url: "http://localhost:5000/api/v1/stops?name="+request.term,
+					dataType: "jsonp",
+					success: function( data ) {
+						
+						console.log(data);
+						response($.map(data, function (item) {
+							return {
+								id: item.code,
+								value: item.description
+							};
+						}));
+					},
+					error(req,status,err){
+						console.log(err);
+					}
+				} );
+			},
+			minLength: 2,
+			select: function( event, ui ) {
+				  $("#txtToCode").text(ui.item.id);
+				  $("#txtTo").val(ui.item.value);
+				return false;
+			}
+		} );
+	}
+    </script>
+	<link rel="stylesheet" href="css/jquery-ui.css">
+	<link rel="stylesheet" href="css/style.css">
+	<style>
+	.ui-autocomplete-loading {
+		background: white url("img/ui-anim_basic_16x16.gif") right center no-repeat;
+	}
+	</style>
+
+  </head>
+  <body onload="init();">
+	<div>
+		<div id="header"><h2>Geobile bus</h2></div>
+		<div id="container">
+			<div id="first">
+			<table>
+				<tr>
+					<td><div class="ui-widget1">
+						<h3>Route</h3>
+						<label for="txtFrom">From: </label>
+						<br /><input id="txtFrom" class="ui-autocomplete-input" autocomplete="off"><br /><label id="txtFromCode"></label>
+						<br /><label for="txtTo">To: </label>
+						<br /><input id="txtTo" class="ui-autocomplete-input" autocomplete="off"><br /><label id="txtToCode"></label>
+						<br /><input id="btnRoute" type="button" value ="Route"/>
+						<br /><div id="divRouteResults"></div>
+					</div><td>
+					<td><div class="ui-widget2">
+						<h3>Trip request</h3>
+						<label for="txtFrom">Date from: </label>
+						<br /><input type="text" id="dateFrom" data-format="DD-MM-YYYY HH:mm" data-template="DD / MM / YYYY     HH : mm" name="datetime" value="21-12-2012 20:30" />
+						<br /><label for="txtTo">Date to: </label>
+						<br /><input type="text" id="dateTo" data-format="DD-MM-YYYY HH:mm" data-template="DD / MM / YYYY     HH : mm" name="datetime" value="21-12-2012 20:30" />
+						<br /><input id="btnCreate" type="button" value ="Create"/>
+						<br /><div id="divRouteResults"></div>
+					</div></td>
+				</tr>
+			</table>
+			</div>
+			<div id="second">
+					<div id="basicMap">
+			</div>
+			<div id="clear"></div>
+		</div>
+	
+	</div>
+	</div>
+  </body>
+</html>

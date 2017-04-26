@@ -68,14 +68,15 @@ def execute(start,end):
 def get_path_details(path):
 	code_list = '('
 	count = 0
-	for code in path:
-		code_list += "'" + code + "'"
-		if count < len(path) - 1:
-			code_list += ","
-		else:
-			code_list += ")"
-			return code_list
-		count += 1
+	if path != None:
+		for code in path:
+			code_list += "'" + code + "'"
+			if count < len(path) - 1:
+				code_list += ","
+			else:
+				code_list += ")"
+				return code_list
+			count += 1
 			
 	return ''
 	
