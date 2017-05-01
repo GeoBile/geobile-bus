@@ -1,45 +1,43 @@
 <!DOCTYPE HTML>
 <html>
   <head>
-    <title>OpenLayers Demo</title>
+    <title>geobile buses</title>
     <style type="text/css">
-      html, body {
-          width: 100%;
-          height: 100%;
-          margin: 10px;
-      }
+ * {
+    box-sizing:border-box;
+  border-radius: 0 !important;
+}
+html, body {
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    position:fixed;
+    margin:0;
+    padding:0;
+}
+.table {
+    display:table;
+    width:100%;
+    height:100%;
+    table-layout:fixed;
+}
+.row1 {
+    display:table-row;
+}
+.cell {
+    display:table-cell;
+    border:0.1pt solid grey;
+	padding: 10px;
+}
+.header {
+    display:table-header-group;
+    border:1px solid grey;
+}
 	  #basicMap {
           width: 100%;
           height: 100%;
 		  }
-		#header {
-			width: 100%;
-			height: 30px;
-		}
 
-		#container {
-			width: 100%;
-			background-color: #ffcc33;
-			margin: auto;
-		}
-		#first {
-			width: 50%;
-			float: left;
-			height: 500px;
-		}
-		#second {
-			width: 40%;
-			float: left;
-			height: 500px;
-		}
-		#third {
-			width: 20%;
-			float: left;
-			height: 500px;
-		}
-		#clear {
-			clear: both;
-		}
 		table,tr,td{
 			vertical-align:top;
 		}
@@ -95,7 +93,11 @@
             new OpenLayers.Projection("EPSG:4326"), // transform from WGS 1984
             map.getProjectionObject() // to Spherical Mercator Projection
           );
-		  markers.addMarker(new OpenLayers.Marker(lonLat));
+		  var size = new OpenLayers.Size(16,16);
+		  var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
+		  var icon = new OpenLayers.Icon('img/marker.png', size, offset);
+		  var marker = new OpenLayers.Marker(lonLat,icon);
+		  markers.addMarker(marker);
 	  }
 	  
 	  function load_data(){
@@ -119,11 +121,10 @@
 			}
 		});
 		
-		
 		function display_route_path(data){
-			var content = "<table>";
+			var content = "<table class='table'>";
 			$.each(data, function(index, element) {
-							add_marker(element.latitude,element.longitude);
+				add_marker(element.latitude,element.longitude);
 				content+="<tr><td>"+element.code+"</td><td>"+element.description+"</td></tr>";
 			});
 			content += "</table>";
@@ -197,43 +198,78 @@
 		background: white url("img/ui-anim_basic_16x16.gif") right center no-repeat;
 	}
 	</style>
-
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/sticky-footer-navbar.css" rel="stylesheet">
   </head>
   <body onload="init();">
-	<div>
-		<div id="header"><h2>Geobile bus</h2></div>
-		<div id="container">
-			<div id="first">
-			<table>
-				<tr>
-					<td><div class="ui-widget1">
-						<h3>Route</h3>
-						<label for="txtFrom">From: </label>
-						<br /><input id="txtFrom" class="ui-autocomplete-input" autocomplete="off"><br /><label id="txtFromCode"></label>
-						<br /><label for="txtTo">To: </label>
-						<br /><input id="txtTo" class="ui-autocomplete-input" autocomplete="off"><br /><label id="txtToCode"></label>
-						<br /><input id="btnRoute" type="button" value ="Route"/>
-						<br /><div id="divRouteResults"></div>
-					</div><td>
-					<td><div class="ui-widget2">
-						<h3>Trip request</h3>
+      <nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">geobile buses</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="#">Action</a></li>
+                <li><a href="#">Another action</a></li>
+                <li><a href="#">Something else here</a></li>
+                <li role="separator" class="divider"></li>
+                <li class="dropdown-header">Nav header</li>
+                <li><a href="#">Separated link</a></li>
+                <li><a href="#">One more separated link</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+  <div class='table container'>
+    <div class='row1'>
+        <div class='cell row'>
+			<div class="row">
+			<div class="ui-widget1 col-md-4">
+										<form>
+						  <div class="form-group">
+						<label for="txtFrom">From: </label> <label id="txtFromCode"></label>	
+						<input id="txtFrom" class="ui-autocomplete-input form-control"" autocomplete="off">					  </div>
+						  <div class="form-group">
+							<label for="txtTo">To: </label><label id="txtToCode"></label>
+							<input id="txtTo" class="ui-autocomplete-input form-control"" autocomplete="off">
+						  </div>
+						  <button type="button" id="btnRoute" class="btn btn-primary">Route</button>
+						</form>
+			</div>
+			<div class="ui-widget2 col-md-8">
 						<label for="txtFrom">Date from: </label>
 						<br /><input type="text" id="dateFrom" data-format="DD-MM-YYYY HH:mm" data-template="DD / MM / YYYY     HH : mm" name="datetime" value="21-12-2012 20:30" />
 						<br /><label for="txtTo">Date to: </label>
 						<br /><input type="text" id="dateTo" data-format="DD-MM-YYYY HH:mm" data-template="DD / MM / YYYY     HH : mm" name="datetime" value="21-12-2012 20:30" />
 						<br /><input id="btnCreate" type="button" value ="Create"/>
-						<br /><div id="divRouteResults"></div>
-					</div></td>
-				</tr>
-			</table>
-			</div>
-			<div id="second">
-					<div id="basicMap">
-			</div>
-			<div id="clear"></div>
+						<br />
+					</div>
+					</div>
+								<div id="divRouteResults"></div>
+
+
 		</div>
-	
-	</div>
-	</div>
+        <div class='cell' id="basicMap"></div>
+    </div>
+							
+
+</div>
+    </footer>
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+
   </body>
 </html>

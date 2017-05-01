@@ -1,14 +1,14 @@
 import psycopg2
 
-conn = None
-cur = None
-
 class DynamicRoutes():
         database = "geobile_db"
         user = "postgres"
         password = "root"
         host = "127.0.0.1"
         port = "5432"
+		
+		conn = None
+		cur = None
         
         def __init__(self):
                 global conn
